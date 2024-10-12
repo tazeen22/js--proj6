@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Scheduler</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .app-container {
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    form input {
+      flex: 1;
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    form button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #218838;
+    }
+
+    h2 {
+      margin-top: 20px;
+      font-size: 1.5rem;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 10px;
+      background: #f9f9f9;
+      margin-bottom: 5px;
+      border: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    li.completed {
+      text-decoration: line-through;
+      color: grey;
+    }
+
+    button.complete-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    button.delete-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    button.complete-btn:hover {
+      background-color: #0056b3;
+    }
+
+    button.delete-btn:hover {
+      background-color: #c82333;
+    }
+
+    button {
+      margin-right: 5px;
+    }
+
+  </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1>Task Scheduler</h1>
+        <form id="taskForm">
+          <input type="text" id="taskInput" placeholder="Enter new task" required>
+          <button type="submit">Add Task</button>
+        </form>
+    
+        <h2>Tasks</h2>
+        <ul id="taskList"></ul>
+    
+        <h2>Completed Tasks</h2>
+        <ul id="completedTaskList"></ul>
+    </div>
+
+    <script>
+      // Variables
+      const taskForm = document.getElementById('taskForm');
+      const taskInput = document.getElementById('taskInput');
+      const taskList = document.getElementById('taskList');
+      const completedTaskList = document.getElementById('completedTaskList');
+      let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+      // Event Listeners
+      taskForm.addEventListener('submit', addTask);
+
+      // Functions
+      function addTask(e) {
+        e.preventDefault();
+        const task = {
+          id: Date.now(),
+          name: taskInput.value,
+          completed: false
+        };
+        tasks.push(task);
+        taskInput.value = '';
+        saveTasks();
+        displayTasks();
+      }
+
+      function displayTasks() {
+        taskList.innerHTML = '';
+        completedTaskList.innerHTML = '';
+
+        tasks.forEach(task => {
+          const taskItem = document.createElement('li');
+          taskItem.innerHTML = `
+            ${task.name}
+            <div>
+              <button class="complete-btn" onclick="toggleComplete(${task.id})">
+                ${task.completed ? 'Undo' : 'Complete'}
+              </button>
+              <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
+            </div>
+          `;
+
+          if (task.completed) {
+            taskItem.classList.add('completed');
+            completedTaskList.appendChild(taskItem); // Add to completed task list
+          } else {
+            taskList.appendChild(taskItem); // Add to task list
+          }
+        });
+      }
+
+      function toggleComplete(taskId) {
+        tasks = tasks.map(task =>
+          task.id === taskId ? { ...task, completed: !task.completed } : task
+        );
+        saveTasks();
+        displayTasks();
+      }
+
+      function deleteTask(taskId) {
+        tasks = tasks.filter(task => task.id !== taskId);
+        saveTasks();
+        displayTasks();
+      }
+
+      function saveTasks() {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+      }
+
+      // Initialize display on page load
+      displayTasks();
+
+    </script>
+</body>
+</html>
